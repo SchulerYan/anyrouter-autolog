@@ -166,7 +166,9 @@ def main():
 
             # 设置默认值
             if not provider:
-                provider = "anyrouter.top"
+                provider = "anyrouter"
+            elif provider in {"anyrouter.top", "https://anyrouter.top"}:
+                provider = "anyrouter"
             if not name:
                 name = f"账号{idx+1}"
 
@@ -182,6 +184,8 @@ def main():
 
             try:
                 # 进行登录
+                info = login_and_extract(page, username, password)
+
                 out_item = {
                     "name": name,
                     "provider": provider,
@@ -190,9 +194,6 @@ def main():
                         "session": info.get("session_cookie") or ""
                     }
                 }
-                info = login_and_extract(page, username, password)
-
-                # 组装输出格式 - 简化为只包含必要信息
 
                 results.append(out_item)
 
