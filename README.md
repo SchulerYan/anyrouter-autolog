@@ -42,7 +42,7 @@
 [
   {
     "name": "主账号",
-    "provider": "网站提供方",
+    "provider": "服务商标识（建议用 anyrouter / agentrouter）",
     "username": "你的用户名",
     "password": "你的登录密码"
   },
@@ -79,7 +79,7 @@ python auto_login.py
 [
   {
     "name": "主账号",
-    "provider": "anyrouter.top",
+    "provider": "anyrouter",
     "cookies": {
       "session": "自动获取的session值"
     },
@@ -150,7 +150,7 @@ python merge_accounts.py
 
 - `cookies` (必需)：用于身份验证的 cookies 数据
 - `api_user` (必需)：用于请求头的 new-api-user 参数
-- `provider` (可选)：指定使用的服务商，默认为 `anyrouter`，否则为`agentrouter`，只认这两个值
+- `provider` (可选)：指定使用的服务商标识，默认为 `anyrouter`，否则为`agentrouter`，只认这两个值
 - `name` (可选)：自定义账号显示名称，用于通知和日志中标识账号
 
 **📝 默认值说明**：
@@ -158,6 +158,12 @@ python merge_accounts.py
 - 如果未提供 `provider` 字段，默认使用 `anyrouter`（向后兼容）
 - 如果未提供 `name` 字段，会使用 `Account 1`、`Account 2` 等默认名称
 - `anyrouter` 与 `agentrouter` 配置已内置，无需填写
+
+**⚠️ 重要提示**：
+
+- `provider` 需要填写服务商**标识**而不是域名
+- `anyrouter` 与 `agentrouter` 是内置标识
+- 使用 `anyrouter.top` / `https://anyrouter.top` 会导致 “配置中未找到服务商” 报错
 
 接下来获取 cookies 与 api_user 的值。
 
