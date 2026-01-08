@@ -10,7 +10,7 @@ anyrouter.top 批量登录并导出 cookies + api_user 的脚本
    [
      {
        "name": "账号名称",
-       "provider": "anyrouter.top",
+       "provider": "anyrouter",
        "username": "用户名",
        "password": "密码"
      }
@@ -166,7 +166,7 @@ def main():
 
             # 设置默认值
             if not provider:
-                provider = "anyrouter.top"
+                provider = "anyrouter"
             if not name:
                 name = f"账号{idx+1}"
 
@@ -182,6 +182,7 @@ def main():
 
             try:
                 # 进行登录
+                info = login_and_extract(page, username, password)
                 out_item = {
                     "name": name,
                     "provider": provider,
@@ -190,10 +191,8 @@ def main():
                         "session": info.get("session_cookie") or ""
                     }
                 }
-                info = login_and_extract(page, username, password)
 
                 # 组装输出格式 - 简化为只包含必要信息
-
                 results.append(out_item)
 
             finally:
