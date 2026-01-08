@@ -25,7 +25,7 @@
 
 点击右上角的 "Fork" 按钮，将本仓库 fork 到你的账户。
 
-### 2️⃣ 获取账号信息
+### 2️⃣ 获取账号信息【自动or手动两种方式】
 
 对于每个需要签到的账号，你需要获取：
 
@@ -36,19 +36,19 @@
 
 如果你的账号支持账号密码登录，可以直接使用[get_user/auto_login.py](get_user/auto_login.py)脚本获取`cookie`和`API User`
 
-1. 将[user.json.example](get_user/user.json.example)复制一份重命名为：user.json，并修改里面的内容
+1. 将[user.json.example](get_user/user.json.example)下载后，重命名为：user.json，并修改里面的内容
 
 ```json
 [
   {
     "name": "主账号",
-    "provider": "网站提供方",
+    "provider": "网站提供方（不提供则默认为 anyrouter）",
     "username": "你的用户名",
     "password": "你的登录密码"
   },
   {
-    "name": "备用账号",
-    "provider": "网站提供方",
+    "name": "副账号",
+    "provider": "网站提供方（不提供则默认为 anyrouter）",
     "username": "你的用户名",
     "password": "你的登录密码"
   }
@@ -61,10 +61,10 @@
 
 ```bash
 # 安装依赖
-uv sync --dev
+pip install playwright
 
 # 安装 Playwright 浏览器
-uv run playwright install chromium
+python -m playwright install chromium
 
 # 运行自动登录脚本
 cd get_user
@@ -79,7 +79,7 @@ python auto_login.py
 [
   {
     "name": "主账号",
-    "provider": "anyrouter.top",
+    "provider": "anyrouter",
     "cookies": {
       "session": "自动获取的session值"
     },
@@ -88,47 +88,45 @@ python auto_login.py
 ]
 ```
 
-4. 转换为单行格式（可选）
+4. 转换为单行格式
 
-如果你的有些账号无法使用账号密码登录，需要手动获取，并添加到`anyrouter_accounts.json`中,执行下一步的脚步转换为单行格式以便复制到 GitHub Secrets中：
+如果你的有些账号无法使用账号密码登录，则需要额外手动获取，并添加到`anyrouter_accounts.json`中。
+
+执行脚步转换为单行格式以便复制到 GitHub Secrets中：
 
 ```bash
 python merge_accounts.py
 ```
 
-这会生成一个单行格式的`anyrouter_accounts.txt`，方便直接复制粘贴到 GitHub 环境变量中
+这会生成一个单行格式的`anyrouter_accounts.txt`，方便直接复制粘贴到 GitHub 环境变量。
 
-#### 🔧 手动获取 Cookies
+#### 🔧 手动获取 Cookies 和 API User
 
+如果自动都成功，则不用尝试手动方式。失败或账号无法密码登录则需要按步骤手动获取 cookies 与 api_user 的值。
 1. 打开浏览器，访问 https://anyrouter.top/
 2. 登录你的账户
 3. 打开开发者工具 (F12)
 4. 切换到 "Application" 或 "存储" 选项卡
 5. 找到 "Cookies" 选项
 6. 复制所有 cookies
-
-#### 🔧 手动获取 API User
-
 通常在网站的用户设置或 API 设置中可以找到，每个账号都有唯一的标识。
 
-### 3️⃣ 设置 GitHub Environment Secret
+具体示例：
 
-1. 在你 fork 的仓库中，点击 "Settings" 选项卡
-2. 在左侧菜单中找到 "Environments" -> "New environment"
-3. 新建一个名为 `production` 的环境
-4. 点击新建的 `production` 环境进入环境配置页
-5. 点击 "Add environment secret" 创建 secret：
-    - Name: `ANYROUTER_ACCOUNTS`
-    - Value: 你的多账号配置数据
+通过 F12 工具，切到 Application 面板，拿到 session 的值，最好重新登录下，该值 1 个月有效期，但有可能提前失效，失效后报 401 错误，到时请再重新获取。
 
-### 4️⃣ 多账号配置格式
+![获取 cookies](./assets/request-session.png)
 
-支持单个与多个账号配置，可选 `name` 和 `provider` 字段：
+通过 F12 工具，切到 Network 面板，可以过滤下，只要 Fetch/XHR，找到带 `New-Api-User`，这个值正常是 5 位数，如果是负数或者个位数，正常是未登录。
+
+![获取 api_user](./assets/request-api-user.png)
+
+然后填写一个配置数据json文件。支持单个与多个账号配置，可选 `name` 和 `provider` 字段：
 
 ```json
 [
   {
-    "name": "我的主账号",
+    "name": "主账号",
     "api_user": "用户ID",
     "provider": "anyrouter",
     "cookies": {
@@ -136,7 +134,7 @@ python merge_accounts.py
     }
   },
   {
-    "name": "我的主账号",
+    "name": "附账号",
     "api_user": "用户ID",
     "provider": "agentrouter",
     "cookies": {
@@ -159,15 +157,15 @@ python merge_accounts.py
 - 如果未提供 `name` 字段，会使用 `Account 1`、`Account 2` 等默认名称
 - `anyrouter` 与 `agentrouter` 配置已内置，无需填写
 
-接下来获取 cookies 与 api_user 的值。
+### 3️⃣ 设置 GitHub Environment Secret
 
-通过 F12 工具，切到 Application 面板，拿到 session 的值，最好重新登录下，该值 1 个月有效期，但有可能提前失效，失效后报 401 错误，到时请再重新获取。
-
-![获取 cookies](./assets/request-session.png)
-
-通过 F12 工具，切到 Network 面板，可以过滤下，只要 Fetch/XHR，找到带 `New-Api-User`，这个值正常是 5 位数，如果是负数或者个位数，正常是未登录。
-
-![获取 api_user](./assets/request-api-user.png)
+1. 在你 fork 的仓库中，点击 "Settings" 选项卡
+2. 在左侧菜单中找到 "Environments" -> "New environment"
+3. 新建一个名为 `production` 的环境
+4. 点击新建的 `production` 环境进入环境配置页
+5. 点击 "Add environment secret" 创建 secret：
+    - Name: `ANYROUTER_ACCOUNTS`
+    - Value: 你的多账号配置数据（`anyrouter_accounts.txt`中的内容）
 
 ### 5️⃣ 启用 GitHub Actions
 
@@ -182,7 +180,7 @@ python merge_accounts.py
 
 1. 在 "Actions" 选项卡中，点击 "AnyRouter 自动签到"
 2. 点击 "Run workflow" 按钮
-3. 确认运行
+3. 确认运行，成功结果如：
 
 ![运行结果](./assets/check-in.png)
 
@@ -198,54 +196,6 @@ python merge_accounts.py
 - 🔧 支持部分账号失败，只要有账号成功签到，整个任务就不会失败
 - 🔑 报 401 错误，请重新获取 cookies，理论 1 个月失效，但有 Bug，详见 [#6](https://github.com/millylee/anyrouter-check-in/issues/6)
 - 💾 请求 200，但出现 Error 1040（08004）：Too many connections，官方数据库问题，目前已修复，但遇到几次了，详见 [#7](https://github.com/millylee/anyrouter-check-in/issues/7)
-
-## 📦 配置示例
-
-### 基础配置（向后兼容）
-
-假设你有两个账号需要签到，不指定 provider 时默认使用 anyrouter：
-
-```json
-[
-  {
-    "cookies": {
-      "session": "abc123session"
-    },
-    "api_user": "user123"
-  },
-  {
-    "cookies": {
-      "session": "xyz789session"
-    },
-    "api_user": "user456"
-  }
-]
-```
-
-### 多服务商配置
-
-如果你需要同时使用多个服务商（如 anyrouter 和 agentrouter）：
-
-```json
-[
-  {
-    "name": "AnyRouter 主账号",
-    "provider": "anyrouter",
-    "cookies": {
-      "session": "abc123session"
-    },
-    "api_user": "user123"
-  },
-  {
-    "name": "AgentRouter 备用",
-    "provider": "agentrouter",
-    "cookies": {
-      "session": "xyz789session"
-    },
-    "api_user": "user456"
-  }
-]
-```
 
 ## 🔧 自定义 Provider 配置（可选）
 
